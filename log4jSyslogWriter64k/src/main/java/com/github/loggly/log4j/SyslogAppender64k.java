@@ -1,4 +1,4 @@
-package com.github.psquickitjayant.log4j;
+package com.github.loggly.log4j;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
@@ -12,8 +12,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.IOException;
 
-import com.github.psquickitjayant.log4j.helpers.SyslogWriter64k;
-
+import com.github.loggly.log4j.helpers.SyslogWriter64k;
 
 /**
     Use SyslogAppender64k to send log messages upto 64K to a remote syslog daemon.
