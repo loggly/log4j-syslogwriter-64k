@@ -5,7 +5,9 @@ import java.io.Writer;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.apache.log4j.helpers.LogLog;
@@ -15,28 +17,39 @@ import org.apache.log4j.helpers.LogLog;
  * java.io.Writer.
  */
 public class SyslogWriter64k extends Writer {
+	private static final int DEFAULT_SYSLOG_PORT = 514;
 
-	final int SYSLOG_PORT = 514;
-	static String syslogHost;
+	private final InetAddress syslogHost;
+	private final int syslogPort;
 
-	private InetAddress address;
-	private DatagramSocket ds;
+	private final DatagramSocket ds;
 
 	public SyslogWriter64k(String syslogHost) {
-		this.syslogHost = syslogHost;
-
+		InetAddress host = null;
+		int port = DEFAULT_SYSLOG_PORT;
 		try {
-			this.address = InetAddress.getByName(syslogHost);
-		} catch (UnknownHostException e) {
+			if (!syslogHost.contains(":")) {
+				host = InetAddress.getByName(syslogHost);
+				port = DEFAULT_SYSLOG_PORT;
+			} else {
+				final URL url = new URL("syslog://" + syslogHost);
+				host = InetAddress.getByName(url.getHost());
+				port = url.getPort();
+			}
+		} catch (UnknownHostException | MalformedURLException e) {
 			LogLog.error("Could not find " + syslogHost + ". All logging will FAIL.", e);
 		}
+		this.syslogHost = host;
+		this.syslogPort = port;
 
+		DatagramSocket ds = null;
 		try {
-			this.ds = new DatagramSocket();
+			ds = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
 			LogLog.error("Could not instantiate DatagramSocket to " + syslogHost + ". All logging will FAIL.", e);
 		}
+		this.ds = ds;
 	}
 
 	@Override
@@ -47,7 +60,7 @@ public class SyslogWriter64k extends Writer {
 	@Override
 	public void write(String string) throws IOException {
 		byte[] bytes = string.getBytes();
-		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, SYSLOG_PORT);
+		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, syslogHost, syslogPort);
 
 		if (this.ds != null)
 			ds.send(packet);

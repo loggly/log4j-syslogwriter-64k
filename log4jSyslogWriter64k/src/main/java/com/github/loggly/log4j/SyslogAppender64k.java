@@ -71,8 +71,8 @@ public class SyslogAppender64k extends AppenderSkeleton {
 
 	/**
 	 * Max lengths in bytes of a message. Per RFC 5424, size limits are dictated by the syslog
-	 * transport mapping in use. But, the practical upper limit of UDP over IPV4 is 65507 (65535 −
-	 * 8 byte UDP header − 20 byte IP header).
+	 * transport mapping in use. But, the practical upper limit of UDP over IPV4 is 65507 (65535 − 8
+	 * byte UDP header − 20 byte IP header).
 	 */
 	protected static final int LOWER_MAX_MSG_LENGTH = 480;
 	protected static final int UPPER_MAX_MSG_LENGTH = 65507;
@@ -139,6 +139,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * 
 	 * @since 0.8.4
 	 */
+	@Override
 	synchronized public void close() {
 		closed = true;
 		if (sqw != null) {
@@ -371,6 +372,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * 
 	 * @since 0.8.4
 	 */
+	@Override
 	public boolean requiresLayout() {
 		return true;
 	}
