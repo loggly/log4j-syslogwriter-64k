@@ -32,7 +32,7 @@ public class SyslogWriter64k extends Writer {
 				host = InetAddress.getByName(syslogHost);
 				port = DEFAULT_SYSLOG_PORT;
 			} else {
-				final URL url = new URL("syslog://" + syslogHost);
+				final URL url = new URL("http://" + syslogHost);
 				host = InetAddress.getByName(url.getHost());
 				port = url.getPort();
 			}
