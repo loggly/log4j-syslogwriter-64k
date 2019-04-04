@@ -77,21 +77,21 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	protected static final int LOWER_MAX_MSG_LENGTH = 480;
 	protected static final int UPPER_MAX_MSG_LENGTH = 65507;
 
-	static final String TAB = "    ";
+	private static final String TAB = "    ";
 
 	// Have LOG_USER as default
-	int syslogFacility = LOG_USER;
-	String facilityStr;
-	boolean facilityPrinting = false;
+	private int syslogFacility = LOG_USER;
+	private String facilityString;
+	private boolean facilityPrinting = false;
 
 	//SyslogTracerPrintWriter stp;
-	SyslogQuietWriter sqw;
-	String syslogHost;
+	private SyslogQuietWriter syslogQuietWriter;
+	private String syslogHost;
 
 	/**
 	 * Max length in bytes of a message.
 	 */
-	int maxMessageLength = UPPER_MAX_MSG_LENGTH;
+	private int maxMessageLength = UPPER_MAX_MSG_LENGTH;
 
 	/**
 	 * If true, the appender will generate the HEADER (timestamp and host name) part of the syslog
@@ -142,31 +142,31 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	@Override
 	synchronized public void close() {
 		closed = true;
-		if (sqw != null) {
+		if (syslogQuietWriter != null) {
 			try {
 				if (layoutHeaderChecked && layout != null && layout.getFooter() != null) {
 					sendLayoutMessage(layout.getFooter());
 				}
-				sqw.close();
-				sqw = null;
+				syslogQuietWriter.close();
+				syslogQuietWriter = null;
 			} catch (java.io.InterruptedIOException e) {
 				Thread.currentThread().interrupt();
-				sqw = null;
+				syslogQuietWriter = null;
 			} catch (IOException e) {
-				sqw = null;
+				syslogQuietWriter = null;
 			}
 		}
 	}
 
 	private void initSyslogFacilityStr() {
-		facilityStr = getFacilityString(this.syslogFacility);
+		facilityString = getFacilityString(this.syslogFacility);
 
-		if (facilityStr == null) {
+		if (facilityString == null) {
 			System.err.println("\"" + syslogFacility + "\" is an unknown syslog facility. Defaulting to \"USER\".");
 			this.syslogFacility = LOG_USER;
-			facilityStr = "user:";
+			facilityString = "user:";
 		} else {
-			facilityStr += ":";
+			facilityString += ":";
 		}
 
 	}
@@ -285,7 +285,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 		// If packet is less than limit, then write it.
 		// Else, write in chunks.
 		if (byteCount <= maxMessageLength) {
-			sqw.write(packet);
+			syslogQuietWriter.write(packet);
 		} else {
 			int split = header.length() + (packet.length() - header.length()) / 2;
 			splitPacket(header, packet.substring(0, split) + "...");
@@ -300,7 +300,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 			return;
 
 		// We must not attempt to append if sqw is null.
-		if (sqw == null) {
+		if (syslogQuietWriter == null) {
 			errorHandler.error("No syslog host is set for SyslogAppedender named \"" + this.name + "\".");
 			return;
 		}
@@ -312,30 +312,30 @@ public class SyslogAppender64k extends AppenderSkeleton {
 			layoutHeaderChecked = true;
 		}
 
-		String hdr = getPacketHeader(event.timeStamp);
+		final String header = getPacketHeader(event.timeStamp);
 		String packet;
 		if (layout == null) {
 			packet = String.valueOf(event.getMessage());
 		} else {
 			packet = layout.format(event);
 		}
-		if (facilityPrinting || hdr.length() > 0) {
-			StringBuffer buf = new StringBuffer(hdr);
+		if (facilityPrinting || header.length() > 0) {
+			StringBuffer buffer = new StringBuffer(header);
 			if (facilityPrinting) {
-				buf.append(facilityStr);
+				buffer.append(facilityString);
 			}
-			buf.append(packet);
-			packet = buf.toString();
+			buffer.append(packet);
+			packet = buffer.toString();
 		}
 
-		sqw.setLevel(event.getLevel().getSyslogEquivalent());
+		syslogQuietWriter.setLevel(event.getLevel().getSyslogEquivalent());
 		//
 		//   if message has a remote likelihood of exceeding 1024 bytes
 		//      when encoded, consider splitting message into multiple packets
 		if (packet.length() > 256) {
-			splitPacket(hdr, packet);
+			splitPacket(header, packet);
 		} else {
-			sqw.write(packet);
+			syslogQuietWriter.write(packet);
 		}
 
 		if (layout == null || layout.ignoresThrowable()) {
@@ -344,9 +344,9 @@ public class SyslogAppender64k extends AppenderSkeleton {
 
 				for (int i = 0; i < s.length; i++) {
 					if (s[i].startsWith("\t")) {
-						sqw.write(hdr + TAB + s[i].substring(1));
+						syslogQuietWriter.write(header + TAB + s[i].substring(1));
 					} else {
-						sqw.write(hdr + s[i]);
+						syslogQuietWriter.write(header + s[i]);
 					}
 				}
 			}
@@ -384,7 +384,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * is not set, then this appender will fail.
 	 */
 	public void setSyslogHost(final String syslogHost) {
-		this.sqw = new SyslogQuietWriter(new SyslogWriter64k(syslogHost), syslogFacility, errorHandler);
+		this.syslogQuietWriter = new SyslogQuietWriter(new SyslogWriter64k(syslogHost), syslogFacility, errorHandler);
 		//this.stp = new SyslogTracerPrintWriter(sqw);
 		this.syslogHost = syslogHost;
 	}
@@ -418,8 +418,8 @@ public class SyslogAppender64k extends AppenderSkeleton {
 		this.initSyslogFacilityStr();
 
 		// If there is already a sqw, make it use the new facility.
-		if (sqw != null) {
-			sqw.setSyslogFacility(this.syslogFacility);
+		if (syslogQuietWriter != null) {
+			syslogQuietWriter.setSyslogFacility(this.syslogFacility);
 		}
 	}
 
@@ -511,19 +511,19 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * @param msg message body, may not be null.
 	 */
 	private void sendLayoutMessage(final String msg) {
-		if (sqw != null) {
+		if (syslogQuietWriter != null) {
 			String packet = msg;
 			String hdr = getPacketHeader(new Date().getTime());
 			if (facilityPrinting || hdr.length() > 0) {
 				StringBuffer buf = new StringBuffer(hdr);
 				if (facilityPrinting) {
-					buf.append(facilityStr);
+					buf.append(facilityString);
 				}
 				buf.append(msg);
 				packet = buf.toString();
 			}
-			sqw.setLevel(6);
-			sqw.write(packet);
+			syslogQuietWriter.setLevel(6);
+			syslogQuietWriter.write(packet);
 		}
 	}
 
