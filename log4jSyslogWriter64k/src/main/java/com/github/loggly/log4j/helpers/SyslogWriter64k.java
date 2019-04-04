@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.log4j.helpers.LogLog;
 
@@ -59,7 +60,7 @@ public class SyslogWriter64k extends Writer {
 
 	@Override
 	public void write(String string) throws IOException {
-		byte[] bytes = string.getBytes();
+		byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
 		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, syslogHost, syslogPort);
 
 		if (this.ds != null)
