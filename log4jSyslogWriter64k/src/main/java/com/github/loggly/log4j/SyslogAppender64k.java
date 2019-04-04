@@ -79,102 +79,10 @@ public class SyslogAppender64k extends AppenderSkeleton {
 
 	private static final String TAB = "    ";
 
-	// Have LOG_USER as default
-	private int syslogFacility = LOG_USER;
-	private String facilityString;
-	private boolean facilityPrinting = false;
-
-	//SyslogTracerPrintWriter stp;
-	private SyslogQuietWriter syslogQuietWriter;
-	private String syslogHost;
-
-	/**
-	 * Max length in bytes of a message.
-	 */
-	private int maxMessageLength = UPPER_MAX_MSG_LENGTH;
-
-	/**
-	 * If true, the appender will generate the HEADER (timestamp and host name) part of the syslog
-	 * packet.
-	 * 
-	 * @since 1.2.15
-	 */
-	private boolean header = false;
-	/**
-	 * Date format used if header = true.
-	 * 
-	 * @since 1.2.15
-	 */
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss ", Locale.ENGLISH);
-	/**
-	 * Host name used to identify messages from this appender.
-	 * 
-	 * @since 1.2.15
-	 */
-	private String localHostname;
-
-	/**
-	 * Set to true after the header of the layout has been sent or if it has none.
-	 */
-	private boolean layoutHeaderChecked = false;
-
-	public SyslogAppender64k() {
-		this.initSyslogFacilityStr();
-
-	}
-
-	public SyslogAppender64k(Layout layout, int syslogFacility) {
-		this.layout = layout;
-		this.syslogFacility = syslogFacility;
-		this.initSyslogFacilityStr();
-	}
-
-	public SyslogAppender64k(Layout layout, String syslogHost, int syslogFacility) {
-		this(layout, syslogFacility);
-		setSyslogHost(syslogHost);
-	}
-
-	/**
-	 * Release any resources held by this SyslogAppender64k.
-	 * 
-	 * @since 0.8.4
-	 */
-	@Override
-	synchronized public void close() {
-		closed = true;
-		if (syslogQuietWriter != null) {
-			try {
-				if (layoutHeaderChecked && layout != null && layout.getFooter() != null) {
-					sendLayoutMessage(layout.getFooter());
-				}
-				syslogQuietWriter.close();
-				syslogQuietWriter = null;
-			} catch (java.io.InterruptedIOException e) {
-				Thread.currentThread().interrupt();
-				syslogQuietWriter = null;
-			} catch (IOException e) {
-				syslogQuietWriter = null;
-			}
-		}
-	}
-
-	private void initSyslogFacilityStr() {
-		facilityString = getFacilityString(this.syslogFacility);
-
-		if (facilityString == null) {
-			System.err.println("\"" + syslogFacility + "\" is an unknown syslog facility. Defaulting to \"USER\".");
-			this.syslogFacility = LOG_USER;
-			facilityString = "user:";
-		} else {
-			facilityString += ":";
-		}
-
-	}
-
 	/**
 	 * Returns the specified syslog facility as a lower-case String, e.g. "kern", "user", etc.
 	 */
-	public static String getFacilityString(int syslogFacility) {
+	public static String getFacilityString(final int syslogFacility) {
 		switch (syslogFacility) {
 			case LOG_KERN:
 				return "kern";
@@ -279,25 +187,118 @@ public class SyslogAppender64k extends AppenderSkeleton {
 		}
 	}
 
+	// Have LOG_USER as default
+	private int syslogFacility = LOG_USER;
+	private String facilityString;
+	private boolean facilityPrinting = false;
+
+	//SyslogTracerPrintWriter stp;
+	private SyslogQuietWriter syslogQuietWriter;
+	private String syslogHost;
+
+	/**
+	 * Max length in bytes of a message.
+	 */
+	private int maxMessageLength = UPPER_MAX_MSG_LENGTH;
+
+	/**
+	 * If true, the appender will generate the HEADER (timestamp and host name) part of the syslog
+	 * packet.
+	 * 
+	 * @since 1.2.15
+	 */
+	private boolean header = false;
+	/**
+	 * Date format used if header = true.
+	 * 
+	 * @since 1.2.15
+	 */
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss ", Locale.ENGLISH);
+	/**
+	 * Host name used to identify messages from this appender.
+	 * 
+	 * @since 1.2.15
+	 */
+	private String localHostname;
+
+	/**
+	 * Set to true after the header of the layout has been sent or if it has none.
+	 */
+	private boolean layoutHeaderChecked = false;
+
+	public SyslogAppender64k() {
+		this.initSyslogFacilityStr();
+
+	}
+
+	public SyslogAppender64k(final Layout layout, final int syslogFacility) {
+		this.layout = layout;
+		this.syslogFacility = syslogFacility;
+		this.initSyslogFacilityStr();
+	}
+
+	public SyslogAppender64k(final Layout layout, final String syslogHost, final int syslogFacility) {
+		this(layout, syslogFacility);
+		setSyslogHost(syslogHost);
+	}
+
+	/**
+	 * Release any resources held by this SyslogAppender64k.
+	 * 
+	 * @since 0.8.4
+	 */
+	@Override
+	synchronized public void close() {
+		closed = true;
+		if (syslogQuietWriter != null) {
+			try {
+				if (layoutHeaderChecked && layout != null && layout.getFooter() != null) {
+					sendLayoutMessage(layout.getFooter());
+				}
+				syslogQuietWriter.close();
+				syslogQuietWriter = null;
+			} catch (final java.io.InterruptedIOException e) {
+				Thread.currentThread().interrupt();
+				syslogQuietWriter = null;
+			} catch (final IOException e) {
+				syslogQuietWriter = null;
+			}
+		}
+	}
+
+	private void initSyslogFacilityStr() {
+		facilityString = getFacilityString(this.syslogFacility);
+
+		if (facilityString == null) {
+			System.err.println("\"" + syslogFacility + "\" is an unknown syslog facility. Defaulting to \"USER\".");
+			this.syslogFacility = LOG_USER;
+			facilityString = "user:";
+		} else {
+			facilityString += ":";
+		}
+
+	}
+
 	private void splitPacket(final String header, final String packet) {
-		int byteCount = packet.getBytes().length;
+		final int byteCount = packet.getBytes().length;
 
 		// If packet is less than limit, then write it.
 		// Else, write in chunks.
 		if (byteCount <= maxMessageLength) {
 			syslogQuietWriter.write(packet);
 		} else {
-			int split = header.length() + (packet.length() - header.length()) / 2;
+			final int split = header.length() + (packet.length() - header.length()) / 2;
 			splitPacket(header, packet.substring(0, split) + "...");
 			splitPacket(header, header + "..." + packet.substring(split));
 		}
 	}
 
 	@Override
-	public void append(LoggingEvent event) {
+	public void append(final LoggingEvent event) {
 
-		if (!isAsSevereAsThreshold(event.getLevel()))
+		if (!isAsSevereAsThreshold(event.getLevel())) {
 			return;
+		}
 
 		// We must not attempt to append if sqw is null.
 		if (syslogQuietWriter == null) {
@@ -320,7 +321,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 			packet = layout.format(event);
 		}
 		if (facilityPrinting || header.length() > 0) {
-			StringBuffer buffer = new StringBuffer(header);
+			final StringBuffer buffer = new StringBuffer(header);
 			if (facilityPrinting) {
 				buffer.append(facilityString);
 			}
@@ -339,14 +340,13 @@ public class SyslogAppender64k extends AppenderSkeleton {
 		}
 
 		if (layout == null || layout.ignoresThrowable()) {
-			String[] s = event.getThrowableStrRep();
-			if (s != null) {
-
-				for (int i = 0; i < s.length; i++) {
-					if (s[i].startsWith("\t")) {
-						syslogQuietWriter.write(header + TAB + s[i].substring(1));
+			final String[] lines = event.getThrowableStrRep();
+			if (lines != null) {
+				for (final String line : lines) {
+					if (line.startsWith("\t")) {
+						syslogQuietWriter.write(header + TAB + line.substring(1));
 					} else {
-						syslogQuietWriter.write(header + s[i]);
+						syslogQuietWriter.write(header + line);
 					}
 				}
 			}
@@ -405,9 +405,10 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * 
 	 * @since 0.8.1
 	 */
-	public void setFacility(String facilityName) {
-		if (facilityName == null)
+	public void setFacility(final String facilityName) {
+		if (facilityName == null) {
 			return;
+		}
 
 		syslogFacility = getFacility(facilityName);
 		if (syslogFacility == -1) {
@@ -434,7 +435,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * If the <b>FacilityPrinting</b> option is set to true, the printed message will include the
 	 * facility name of the application. It is <em>false</em> by default.
 	 */
-	public void setFacilityPrinting(boolean on) {
+	public void setFacilityPrinting(final boolean on) {
 		facilityPrinting = on;
 	}
 
@@ -475,9 +476,9 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	private String getLocalHostname() {
 		if (localHostname == null) {
 			try {
-				InetAddress addr = InetAddress.getLocalHost();
+				final InetAddress addr = InetAddress.getLocalHost();
 				localHostname = addr.getHostName();
-			} catch (UnknownHostException uhe) {
+			} catch (final UnknownHostException uhe) {
 				localHostname = "UNKNOWN_HOST";
 			}
 		}
@@ -493,7 +494,7 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 */
 	private String getPacketHeader(final long timeStamp) {
 		if (header) {
-			StringBuffer buf = new StringBuffer(dateFormat.format(new Date(timeStamp)));
+			final StringBuffer buf = new StringBuffer(dateFormat.format(new Date(timeStamp)));
 			//  RFC 3164 says leading space, not leading zero on days 1-9
 			if (buf.charAt(4) == '0') {
 				buf.setCharAt(4, ' ');
@@ -513,9 +514,9 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	private void sendLayoutMessage(final String msg) {
 		if (syslogQuietWriter != null) {
 			String packet = msg;
-			String hdr = getPacketHeader(new Date().getTime());
+			final String hdr = getPacketHeader(new Date().getTime());
 			if (facilityPrinting || hdr.length() > 0) {
-				StringBuffer buf = new StringBuffer(hdr);
+				final StringBuffer buf = new StringBuffer(hdr);
 				if (facilityPrinting) {
 					buf.append(facilityString);
 				}

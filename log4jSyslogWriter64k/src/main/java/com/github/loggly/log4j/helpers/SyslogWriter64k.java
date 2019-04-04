@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.log4j.helpers.LogLog;
@@ -20,12 +21,19 @@ import org.apache.log4j.helpers.LogLog;
 public class SyslogWriter64k extends Writer {
 	private static final int DEFAULT_SYSLOG_PORT = 514;
 
+	private final Charset charset;
 	private final InetAddress syslogHost;
 	private final int syslogPort;
 
 	private final DatagramSocket ds;
 
-	public SyslogWriter64k(String syslogHost) {
+	public SyslogWriter64k(final String syslogHost) {
+		this(syslogHost, StandardCharsets.UTF_8);
+	}
+
+	public SyslogWriter64k(final String syslogHost, final Charset charset) {
+		this.charset = charset;
+
 		InetAddress host = null;
 		int port = DEFAULT_SYSLOG_PORT;
 		try {
@@ -46,7 +54,7 @@ public class SyslogWriter64k extends Writer {
 		DatagramSocket ds = null;
 		try {
 			ds = new DatagramSocket();
-		} catch (SocketException e) {
+		} catch (final SocketException e) {
 			e.printStackTrace();
 			LogLog.error("Could not instantiate DatagramSocket to " + syslogHost + ". All logging will FAIL.", e);
 		}
@@ -54,18 +62,18 @@ public class SyslogWriter64k extends Writer {
 	}
 
 	@Override
-	public void write(char[] buf, int off, int len) throws IOException {
+	public void write(final char[] buf, final int off, final int len) throws IOException {
 		this.write(new String(buf, off, len));
 	}
 
 	@Override
-	public void write(String string) throws IOException {
-		byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-		DatagramPacket packet = new DatagramPacket(bytes, bytes.length, syslogHost, syslogPort);
+	public void write(final String string) throws IOException {
+		final byte[] bytes = string.getBytes(charset);
+		final DatagramPacket packet = new DatagramPacket(bytes, bytes.length, syslogHost, syslogPort);
 
-		if (this.ds != null)
+		if (this.ds != null) {
 			ds.send(packet);
-
+		}
 	}
 
 	@Override
