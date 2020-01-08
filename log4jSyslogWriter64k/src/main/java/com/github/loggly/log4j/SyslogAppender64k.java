@@ -12,7 +12,8 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.helpers.SyslogQuietWriter;
 import org.apache.log4j.spi.LoggingEvent;
 
-import com.github.loggly.log4j.helpers.SyslogWriter64k;
+import com.github.loggly.log4j.helpers.SyslogTcpWriter64k;
+import com.github.loggly.log4j.helpers.SyslogUdpWriter64k;
 
 /**
  * Use SyslogAppender64k to send log messages upto 64K to a remote syslog daemon.
@@ -76,6 +77,8 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 */
 	protected static final int LOWER_MAX_MSG_LENGTH = 480;
 	protected static final int UPPER_MAX_MSG_LENGTH = 65507;
+
+	private static final String DEFAULT_PROTOCOL = "udp";
 
 	private static final String TAB = "    ";
 
@@ -193,8 +196,9 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	private boolean facilityPrinting = false;
 
 	//SyslogTracerPrintWriter stp;
-	private SyslogQuietWriter syslogQuietWriter;
+	private SyslogQuietWriter syslogQuietWriter = null;
 	private String syslogHost;
+	private String protocol = "udp";
 
 	/**
 	 * Max length in bytes of a message.
@@ -384,9 +388,28 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 * is not set, then this appender will fail.
 	 */
 	public void setSyslogHost(final String syslogHost) {
-		this.syslogQuietWriter = new SyslogQuietWriter(new SyslogWriter64k(syslogHost), syslogFacility, errorHandler);
-		//this.stp = new SyslogTracerPrintWriter(sqw);
 		this.syslogHost = syslogHost;
+		createSyslogWriter();
+	}
+
+	private void createSyslogWriter() {
+		if (syslogQuietWriter != null) {
+			try {
+				syslogQuietWriter.close();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+		switch (protocol) {
+			case "udp":
+				this.syslogQuietWriter = new SyslogQuietWriter(new SyslogUdpWriter64k(syslogHost), syslogFacility, errorHandler);
+				break;
+			case "tcp":
+				this.syslogQuietWriter = new SyslogQuietWriter(new SyslogTcpWriter64k(syslogHost), syslogFacility, errorHandler);
+				break;
+			default:
+				throw new RuntimeException(String.format("Invalid protocol: %s", protocol));
+		}
 	}
 
 	/**
@@ -394,6 +417,23 @@ public class SyslogAppender64k extends AppenderSkeleton {
 	 */
 	public String getSyslogHost() {
 		return syslogHost;
+	}
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(final String protocol) {
+		final String protocolToSet = (protocol != null ? protocol : DEFAULT_PROTOCOL).toLowerCase();
+		switch (protocolToSet) {
+			case "udp":
+			case "tcp":
+				this.protocol = protocol;
+				break;
+			default:
+				throw new RuntimeException(String.format("Invalid protocol: %s", protocolToSet));
+		}
+		createSyslogWriter();
 	}
 
 	/**

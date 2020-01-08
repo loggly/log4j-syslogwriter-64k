@@ -5,17 +5,17 @@ import java.io.Writer;
 
 import org.junit.Test;
 
-public class SyslogWriter64kTest {
+public class SyslogUdpWriter64kTest {
 	@Test
 	public void createWriterWithPort() throws IOException {
-		Writer writer = new SyslogWriter64k("localhost:5514");
+		Writer writer = new SyslogUdpWriter64k("localhost:5514");
 		writer.write("abc");
 		writer.close();
 	}
 	
 	@Test
 	public void createWriterWithoutPort() throws IOException {
-		Writer writer = new SyslogWriter64k("localhost");
+		Writer writer = new SyslogUdpWriter64k("localhost");
 		writer.write("abc");
 		writer.close();
 	}
