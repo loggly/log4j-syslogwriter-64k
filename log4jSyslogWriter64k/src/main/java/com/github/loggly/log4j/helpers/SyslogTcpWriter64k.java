@@ -21,6 +21,7 @@ public class SyslogTcpWriter64k extends SyslogWriter64k {
 		super(syslogHost, charset);
 	}
 
+	private Optional<Socket> socket = Optional.empty();
 	private Optional<BufferedWriter> writer = Optional.empty();
 
 	private Optional<BufferedWriter> getOptionalWriter() {
@@ -29,8 +30,8 @@ public class SyslogTcpWriter64k extends SyslogWriter64k {
 
 	private synchronized BufferedWriter getWriter() throws IOException {
 		if (!writer.isPresent()) {
-			final Socket socket = new Socket(getSyslogHost(), getSyslogPort());
-			writer = Optional.of(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), getCharset())));
+			socket = Optional.of(new Socket(getSyslogHost(), getSyslogPort()));
+			writer = Optional.of(new BufferedWriter(new OutputStreamWriter(socket.get().getOutputStream(), getCharset())));
 		}
 		return writer.get();
 	}
@@ -58,9 +59,16 @@ public class SyslogTcpWriter64k extends SyslogWriter64k {
 
 	@Override
 	public void close() throws IOException {
-		final Optional<BufferedWriter> ow = getOptionalWriter();
-		if (ow.isPresent()) {
-			ow.get().close();
+		try {
+			final Optional<BufferedWriter> ow = getOptionalWriter();
+			if (ow.isPresent()) {
+				ow.get().close();
+			}
+		} catch (final IOException e) {
+			// ignore
+		}
+		if (socket.isPresent()) {
+			socket.get().close();
 		}
 	}
 }
