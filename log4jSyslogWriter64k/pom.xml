@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hlag</groupId>
 	<artifactId>log4jSyslogWriter64k</artifactId>
-	<version>1.1</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<name>log4jSyslogWriter64k</name>
 	<description>Writes logs up to 64k in Syslog</description>
 
