@@ -1,46 +1,48 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.lars-sh</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.9.7</version>
+	</parent>
+
 	<groupId>com.hlag</groupId>
 	<artifactId>log4jSyslogWriter64k</artifactId>
 	<version>1.1.1-SNAPSHOT</version>
+
 	<name>log4jSyslogWriter64k</name>
 	<description>Writes logs up to 64k in Syslog</description>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<parent-pom.create-changelog-md>false</parent-pom.create-changelog-md>
+		<parent-pom.create-readme-md>false</parent-pom.create-readme-md>
+		<parent-pom.default-sources-folder>java</parent-pom.default-sources-folder>
+		<parent-pom.create-lombok-config>false</parent-pom.create-lombok-config>
+		<parent-pom.create-travis-yml>false</parent-pom.create-travis-yml>
+		<eclipse.compiler.javadoc>disabled</eclipse.compiler.javadoc>
+		<eclipse.compiler.nullAnalysis>disabled</eclipse.compiler.nullAnalysis>
+		<maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<checkstyle.skip>true</checkstyle.skip>
+		<formatter.skip>true</formatter.skip>
+		<pmd.skip>true</pmd.skip>
+		<spotbugs.skip>true</spotbugs.skip>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
-		
-		
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.11.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>2.23.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
