@@ -6,6 +6,7 @@
 		<groupId>de.lars-sh</groupId>
 		<artifactId>parent</artifactId>
 		<version>0.9.7</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<groupId>com.hlag</groupId>
