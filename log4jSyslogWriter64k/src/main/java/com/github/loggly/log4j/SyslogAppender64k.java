@@ -355,6 +355,8 @@ public class SyslogAppender64k extends AppenderSkeleton {
 				}
 			}
 		}
+
+		syslogQuietWriter.flush();
 	}
 
 	/**
